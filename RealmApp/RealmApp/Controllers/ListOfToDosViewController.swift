@@ -8,9 +8,9 @@
 import UIKit
 import RealmSwift
 
-class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+ final class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    let control = UISegmentedControl(items: ["First", "Second"])
+    let control = UISegmentedControl(items: ["A-Z", "Sort by Data"])
     var taskLists: Results<TasksList>?
     var tableView: UITableView!
 
@@ -46,7 +46,7 @@ class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITabl
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         tableView.register(ToDoTableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.estimatedRowHeight = 80
+        tableView.estimatedRowHeight = 100
         tableView.rowHeight = UITableView.automaticDimension
         self.tableView = tableView
        }
@@ -56,7 +56,7 @@ class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITabl
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        80
+        100
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -92,6 +92,14 @@ class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITabl
     func setUpSegmentedControll() {
         
         self.control.addTarget(self, action: #selector(segmentControl(_:)), for: .valueChanged)
+        self.control.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
+        self.control.layer.cornerRadius = 20
+        self.control.selectedSegmentTintColor = UIColor(red: 0.80, green: 0.68, blue: 0.94, alpha: 1.00)
+        let titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        control.setTitleTextAttributes(titleTextAttributes, for: .normal)
+        let titleTextAttributesSelected = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        control.setTitleTextAttributes(titleTextAttributesSelected, for: .selected)
+        
         self.control.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(self.control)
 
@@ -105,14 +113,16 @@ class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITabl
     @objc func segmentControl(_ segmentedControl: UISegmentedControl) {
        switch (segmentedControl.selectedSegmentIndex) {
           case 0:
-             // First segment tapped
-          break
+           taskLists = taskLists?.sorted(byKeyPath: "name")
+           
+           break
           case 1:
-             // Second segment tapped
+           taskLists = taskLists?.sorted(byKeyPath: "date")
           break
           default:
           break
        }
+        tableView.reloadData()
     }
     
     private func alertForAddAndUpdatesListTasks(_ taskList: TasksList? = nil,

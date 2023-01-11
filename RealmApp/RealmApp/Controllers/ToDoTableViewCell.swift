@@ -21,8 +21,8 @@ class ToDoTableViewCell: UITableViewCell {
         self.title.textColor = .black
         self.title.numberOfLines = 0
         
-        self.numberOfCompletedTasks.font = UIFont.systemFont(ofSize: 20, weight: .medium)
-        self.numberOfCompletedTasks.textColor = .black
+        self.numberOfCompletedTasks.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        self.numberOfCompletedTasks.textColor = .darkGray
         self.numberOfCompletedTasks.numberOfLines = 0
         
         self.contentView.addSubview(self.title)
@@ -32,11 +32,13 @@ class ToDoTableViewCell: UITableViewCell {
         self.numberOfCompletedTasks.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            self.title.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 14),
+            self.title.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 20),
             self.title.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 14),
             self.title.widthAnchor.constraint(equalToConstant: 100),
+            self.title.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -14),
 
-            self.numberOfCompletedTasks.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 14),
+
+            self.numberOfCompletedTasks.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 20),
             self.numberOfCompletedTasks.leadingAnchor.constraint(equalTo: self.title.trailingAnchor, constant: 14),
             self.numberOfCompletedTasks.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -14),
             self.numberOfCompletedTasks.widthAnchor.constraint(equalToConstant: 20)
