@@ -18,6 +18,8 @@
 		85467B10296F018B00946732 /* TaskLIstModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85467B0F296F018B00946732 /* TaskLIstModel.swift */; };
 		85467B12296F01AD00946732 /* ListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85467B11296F01AD00946732 /* ListModel.swift */; };
 		85467B14296F055900946732 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85467B13296F055900946732 /* StorageManager.swift */; };
+		859CF2902972F473002E4CE0 /* TasksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859CF28F2972F473002E4CE0 /* TasksViewController.swift */; };
+		859CF292297309AF002E4CE0 /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859CF291297309AF002E4CE0 /* TaskTableViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		85467B0F296F018B00946732 /* TaskLIstModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskLIstModel.swift; sourceTree = "<group>"; };
 		85467B11296F01AD00946732 /* ListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListModel.swift; sourceTree = "<group>"; };
 		85467B13296F055900946732 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
+		859CF28F2972F473002E4CE0 /* TasksViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksViewController.swift; sourceTree = "<group>"; };
+		859CF291297309AF002E4CE0 /* TaskTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +95,8 @@
 			children = (
 				85467B0B296EEC0C00946732 /* ListOfToDosViewController.swift */,
 				85467B0D296EED1600946732 /* ToDoTableViewCell.swift */,
+				859CF28F2972F473002E4CE0 /* TasksViewController.swift */,
+				859CF291297309AF002E4CE0 /* TaskTableViewCell.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -190,6 +196,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				85467B0C296EEC0C00946732 /* ListOfToDosViewController.swift in Sources */,
+				859CF2902972F473002E4CE0 /* TasksViewController.swift in Sources */,
+				859CF292297309AF002E4CE0 /* TaskTableViewCell.swift in Sources */,
 				85467AED296EE74D00946732 /* AppDelegate.swift in Sources */,
 				85467B10296F018B00946732 /* TaskLIstModel.swift in Sources */,
 				85467B14296F055900946732 /* StorageManager.swift in Sources */,

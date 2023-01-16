@@ -25,10 +25,7 @@ import RealmSwift
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
         let add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editTapped))
-        let edit = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editTapped))
-
-        navigationItem.rightBarButtonItems = [add, edit]
+        navigationItem.rightBarButtonItems = [add]
         
 //        StorageManager.deleteAll()
         
@@ -63,8 +60,9 @@ import RealmSwift
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as? ToDoTableViewCell else {
             return UITableViewCell()
         }
-        let taskList = taskLists?[indexPath.row]
-        cell.setUpCell(name: taskList?.name ?? "", competed: taskList?.tasks.count.description ?? "")
+        guard let taskList = taskLists?[indexPath.row] else { return UITableViewCell() }
+        
+        cell.setUpCell(with: taskList)
         return cell
     }
     
@@ -84,10 +82,6 @@ import RealmSwift
         }
     }
     
-    @objc func editTapped(_ sender:UIButton!) {
-//        let vc = CreatingPostViewController()
-//        self.navigationController?.pushViewController(vc, animated: true)
-    }
     
     func setUpSegmentedControll() {
         
@@ -114,7 +108,6 @@ import RealmSwift
        switch (segmentedControl.selectedSegmentIndex) {
           case 0:
            taskLists = taskLists?.sorted(byKeyPath: "name")
-           
            break
           case 1:
            taskLists = taskLists?.sorted(byKeyPath: "date")
@@ -177,22 +170,30 @@ import RealmSwift
             tableView.reloadRows(at: [indexPath], with: .automatic)
         }
         
-        let editeContextItem = UIContextualAction(style: .destructive, title: "Edit") {  _, _, _ in
+        let editContextItem = UIContextualAction(style: .destructive, title: "Edit") {  _, _, _ in
             self.alertForAddAndUpdatesListTasks(currentList) {
                 tableView.reloadRows(at: [indexPath], with: .automatic)
             }
         }
         
         let doneContextItem = UIContextualAction(style: .destructive, title: "Done") { _, _, _ in
-            
+            StorageManager.makeAllDone(currentList)
+            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
         
-        editeContextItem.backgroundColor = .blue
+        editContextItem.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
         deleteContextItem.backgroundColor = .red
         doneContextItem.backgroundColor = .green
         
-        let swipeActions = UISwipeActionsConfiguration(actions: [deleteContextItem, editeContextItem, doneContextItem])
+        let swipeActions = UISwipeActionsConfiguration(actions: [deleteContextItem, editContextItem, doneContextItem])
         
         return swipeActions
     }
+     
+     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+         let vc = TasksViewController()
+         let currentTaskList = taskLists?[indexPath.row]
+         vc.currentTaskList = currentTaskList
+         self.navigationController?.pushViewController(vc, animated: true)
+     }
 }
