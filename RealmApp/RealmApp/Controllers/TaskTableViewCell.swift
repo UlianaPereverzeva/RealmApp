@@ -12,15 +12,6 @@ class TaskTableViewCell: UITableViewCell {
     var name = UILabel()
     var note = UILabel()
     
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-        if selected == true{
-            self.contentView.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
-            } else if selected == false {
-                self.contentView.backgroundColor = .clear
-            }
-    }
-    
     func setUpCell(name: String, note: String){
         self.name.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         self.name.textColor = .black

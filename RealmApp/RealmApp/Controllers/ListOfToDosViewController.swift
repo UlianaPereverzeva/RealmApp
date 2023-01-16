@@ -8,7 +8,9 @@
 import UIKit
 import RealmSwift
 
- final class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+final class ListOfToDosViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
+    var notificationToken: NotificationToken?
     
     let control = UISegmentedControl(items: ["A-Z", "Sort by Data"])
     var taskLists: Results<TasksList>?
@@ -18,18 +20,23 @@ import RealmSwift
         super.viewDidLoad()
         setUpSegmentedControll()
         setupTableView()
+        taskLists = StorageManager.getAllTasksLists().sorted(byKeyPath: "name")
+        addTaskListObserver()
+        
         view.backgroundColor = .white
         tableView.backgroundColor = .clear
         navigationItem.title = "ToDos List"
-        
+                
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
         let add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
         
         navigationItem.rightBarButtonItems = [add]
-        
-//        StorageManager.deleteAll()
-        
-        taskLists = StorageManager.getAllTasksLists().sorted(byKeyPath: "name")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if let index = self.tableView.indexPathForSelectedRow {
+            self.tableView.deselectRow(at: index, animated: true)
+        }
     }
     
     private func setupTableView() {
@@ -61,7 +68,11 @@ import RealmSwift
             return UITableViewCell()
         }
         guard let taskList = taskLists?[indexPath.row] else { return UITableViewCell() }
-        
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
+        cell.selectedBackgroundView = backgroundView
+        cell.title.highlightedTextColor = .white
+        cell.numberOfCompletedTasks.highlightedTextColor = .white
         cell.setUpCell(with: taskList)
         return cell
     }
@@ -72,16 +83,11 @@ import RealmSwift
         } else {
             return 0
         }
-
     }
     
     @objc func addTapped(_ sender:UIButton!) {
-        alertForAddAndUpdatesListTasks { [weak self] in
-            print("new list added")
-            self?.tableView.reloadData()
-        }
+        alertForAddAndUpdatesListTasks()
     }
-    
     
     func setUpSegmentedControll() {
         
@@ -115,12 +121,10 @@ import RealmSwift
           default:
           break
        }
-        tableView.reloadData()
     }
     
-    private func alertForAddAndUpdatesListTasks(_ taskList: TasksList? = nil,
-                                                completion: @escaping () -> Void)
-    {
+    private func alertForAddAndUpdatesListTasks(_ taskList: TasksList? = nil ) {
+        
         let title = taskList == nil ? "New List" : "Edit List"
         let message = "Please insert list name"
         let doneButtonName = taskList == nil ? "Save" : "Update"
@@ -135,13 +139,11 @@ import RealmSwift
                 return
             }
             if let tasksList = taskList {
-                StorageManager.editList(tasksList, newListName: newListName, completion: completion)
+                StorageManager.editList(tasksList, newListName: newListName)
             } else {
                 let tasksList = TasksList()
                 tasksList.name = newListName
                 StorageManager.saveTasksList(taskList: tasksList)
-//                self.tableView.insertRows(at: [IndexPath(row: (self.taskLists?.count ?? 0) - 1, section: 0)], with: .automatic)
-                completion()
             }
         }
         
@@ -167,18 +169,13 @@ import RealmSwift
         
         let deleteContextItem = UIContextualAction(style: .destructive, title: "Delete") { _, _, _ in
             StorageManager.deleteList(currentList)
-            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
-        
         let editContextItem = UIContextualAction(style: .destructive, title: "Edit") {  _, _, _ in
-            self.alertForAddAndUpdatesListTasks(currentList) {
-                tableView.reloadRows(at: [indexPath], with: .automatic)
-            }
+            self.alertForAddAndUpdatesListTasks(currentList) 
+            
         }
-        
         let doneContextItem = UIContextualAction(style: .destructive, title: "Done") { _, _, _ in
             StorageManager.makeAllDone(currentList)
-            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
         
         editContextItem.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
@@ -196,4 +193,40 @@ import RealmSwift
          vc.currentTaskList = currentTaskList
          self.navigationController?.pushViewController(vc, animated: true)
      }
+    
+    private func addTaskListObserver() {
+        notificationToken = taskLists?.observe { [weak self] change in
+            guard let self = self else {return}
+            switch change {
+            case .initial:
+                print("initial element")
+            case .update(_, let deletions, let insertions, let modifications):
+                print("deletions: \(deletions)")
+                print("insertions: \(insertions)")
+                print("modifications: \(modifications)")
+                if !modifications.isEmpty {
+                    let indexPathArray = self.createIndexPathArray(intArray: modifications)
+                    self.tableView.reloadRows(at: indexPathArray, with: .automatic)
+                }
+                if !deletions.isEmpty {
+                    let indexPathArray = self.createIndexPathArray(intArray: deletions)
+                    self.tableView.deleteRows(at: indexPathArray, with: .automatic)
+                }
+                if !insertions.isEmpty {
+                    let indexPathArray = self.createIndexPathArray(intArray: insertions)
+                    self.tableView.insertRows(at: indexPathArray, with: .automatic)
+                }
+            case .error(let error):
+                print("error: \(error)")
+            }
+        }
+    }
+    
+    private func createIndexPathArray(intArray: [Int]) -> [IndexPath] {
+        var indexPathArray = [IndexPath]()
+        for row in intArray {
+            indexPathArray.append(IndexPath(row: row, section: 0))
+        }
+        return indexPathArray
+    }
 }

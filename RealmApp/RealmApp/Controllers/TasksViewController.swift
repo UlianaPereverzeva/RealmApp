@@ -8,8 +8,40 @@
 import UIKit
 import RealmSwift
 
-class TasksViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+enum TasksFlow {
+    case addingNewTask
+    case editingNewTask(task: Task)
+}
 
+struct TextForAlert {
+    
+    let titleForAlert = "Task Value"
+    var messageForAlert: String
+    let doneButtonForAlert: String
+    let cancelText = "Cancel"
+    
+    let newTextFieldPlaceholder = "New task"
+    let noteTextFieldPlaceholder = "Note"
+    
+    var taskName: String?
+    var taskNote: String?
+    
+    init(tasksFlow: TasksFlow) {
+        switch tasksFlow {
+        case .addingNewTask:
+            messageForAlert = "Please insert new task value"
+            doneButtonForAlert = "Save"
+        case .editingNewTask(let task):
+            messageForAlert = "Please edit your task"
+            doneButtonForAlert = "Update"
+            taskName = task.name
+            taskNote = task.note
+        }
+    }
+}
+
+class TasksViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
     var tableView: UITableView!
     var currentTaskList: TasksList?
     let sectionNameArray = ["Completed tasks", "Outstanding tasks"]
@@ -17,7 +49,7 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
     lazy var editBtn = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(self.editTapped(_:)))
     lazy var doneBtn = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.editTapped(_:)))
     lazy var add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(self.addTapped(_:)))
-
+    
     private var outstandingTasks: Results<Task>?
     private var completedTasks: Results<Task>?
     
@@ -46,7 +78,7 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
         tableView.estimatedRowHeight = 80
         tableView.rowHeight = UITableView.automaticDimension
         self.tableView = tableView
-       }
+    }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
@@ -59,11 +91,11 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         80
     }
-
+    
     func numberOfSections(in tableView: UITableView) -> Int {
         sectionNameArray.count
     }
-
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 40))
         view.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
@@ -79,7 +111,7 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let completedTasks = completedTasks,
-        let outstandingTasks = outstandingTasks else { return 0 }
+              let outstandingTasks = outstandingTasks else { return 0 }
         return section == 0 ? completedTasks.count : outstandingTasks.count
     }
     
@@ -101,7 +133,7 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-
+        
         guard let completedTasks = completedTasks,
               var completedTasksArray = Array(completedTasks) as? [Task],
               let outstandingTasks = outstandingTasks,
@@ -111,16 +143,16 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
         if destinationIndexPath.section != sourceIndexPath.section && destinationIndexPath.section == 0 {
             
             let outstandingTask = outstandingTasksArray.remove(at: sourceIndexPath.row)
-
+            
             completedTasksArray.insert(outstandingTask, at: destinationIndexPath.row)
             
             StorageManager.saveTaskWhenYouMoveCellOrPutDoneButton(outstandingTask)
-
+            
         }
         else if destinationIndexPath.section != sourceIndexPath.section && destinationIndexPath.section == 1 {
             
             let completedTask = completedTasksArray.remove(at: sourceIndexPath.row)
-
+            
             outstandingTasksArray.insert(completedTask, at: destinationIndexPath.row)
             StorageManager.saveTaskWhenYouMoveCellOrPutDoneButton(completedTask)
         }
@@ -141,14 +173,14 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let task = indexPath.section == 0 ? completedTasks?[indexPath.row] : outstandingTasks?[indexPath.row]
         guard let task = task else { return nil }
-
+        
         let deleteContextItem = UIContextualAction(style: .destructive, title: "Delete") { _, _, _ in
             StorageManager.deleteTask(task)
             self.filteringTasks()
-
+            
         }
         let editContextItem = UIContextualAction(style: .destructive, title: "Edit") { _, _, _ in
-            self.alertForAddAndUpdateList(task)
+            self.alertForAddAndUpdateList(tasksFlow: .editingNewTask(task: task))
         }
         let doneText = task.isComplete ? "Not done" : "Done"
         let doneContextItem = UIContextualAction(style: .destructive, title: doneText) { _, _, _ in
@@ -168,58 +200,58 @@ class TasksViewController: UIViewController, UITableViewDataSource, UITableViewD
 extension TasksViewController {
     
     @objc func addTapped(_ sender:UIButton!) {
-        alertForAddAndUpdateList()
+        alertForAddAndUpdateList(tasksFlow: .addingNewTask)
     }
     
-    private func alertForAddAndUpdateList(_ taskForEditing: Task? = nil ) {
-        let title = "Task Value"
-        let message = (taskForEditing == nil ) ? "Please insert new task value" : "Please edit your task"
-        let doneButton = (taskForEditing == nil ) ? "Save" : "Update"
+    private func alertForAddAndUpdateList(tasksFlow: TasksFlow ) {
         
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let textForAlert = TextForAlert(tasksFlow: tasksFlow)
+        
+        let alert = UIAlertController(title: textForAlert.titleForAlert, message: textForAlert.messageForAlert, preferredStyle: .alert)
         
         var taskTextField: UITextField!
         var noteTextField: UITextField!
         
-        let saveButtonAction = UIAlertAction(title: doneButton, style: .default) { _ in
+        alert.addTextField { textField in
+            taskTextField = textField
+            taskTextField.placeholder = textForAlert.newTextFieldPlaceholder
+            
+            taskTextField.text = textForAlert.taskName
+        }
+        
+        alert.addTextField { textFieldForEditing in
+            noteTextField = textFieldForEditing
+            noteTextField.placeholder = textForAlert.noteTextFieldPlaceholder
+            
+            noteTextField.text = textForAlert.taskNote
+        }
+        
+        let saveButtonAction = UIAlertAction(title: textForAlert.doneButtonForAlert, style: .default) { [weak self] _ in
             
             guard let newNameTask = taskTextField.text,
                   !newNameTask.isEmpty,
                   let newNote = noteTextField.text,
-                  !newNote.isEmpty else { return }
+                  !newNote.isEmpty,
+                  let self = self else { return }
             
-            if let taskForEditing = taskForEditing {
-                StorageManager.editTask(taskForEditing, newNameTask: newNameTask, newNote: newNote)
-            } else {
+            switch tasksFlow {
+            case .addingNewTask:
                 let task = Task()
                 task.name = newNameTask
                 task.note = newNote
                 guard let currentTaskList = self.currentTaskList else { return }
                 StorageManager.saveTask(currentTaskList, task: task)
+            case .editingNewTask(let task):
+                StorageManager.editTask(task, newNameTask: newNameTask, newNote: newNote)
             }
             self.filteringTasks()
         }
-        let cancelButtonAction = UIAlertAction(title: "Cancel", style: .destructive)
+        
+        let cancelButtonAction = UIAlertAction(title: textForAlert.cancelText, style: .destructive)
         
         alert.addAction(saveButtonAction)
         alert.addAction(cancelButtonAction)
         
-        alert.addTextField { textField in
-            taskTextField = textField
-            taskTextField.placeholder = "New task"
-            
-            if let taskName = taskForEditing {
-                taskTextField.text = taskName.name
-            }
-        }
-        alert.addTextField { textFieldForEditing in
-            noteTextField = textFieldForEditing
-            noteTextField.placeholder = "Note"
-            
-            if let taskName = taskForEditing {
-                noteTextField.text = taskName.note
-            }
-        }
         present(alert, animated: true)
     }
 }

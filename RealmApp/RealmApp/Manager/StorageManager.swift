@@ -7,6 +7,7 @@
 
 import Foundation
 import RealmSwift
+ 
 
 let realm = try! Realm()
 
@@ -39,11 +40,10 @@ class StorageManager {
         realm.objects(TasksList.self)
     }
     
-    static func editList(_ taskList: TasksList, newListName: String, completion: @escaping () -> Void) {
+    static func editList(_ taskList: TasksList, newListName: String) {
         do {
             try realm.write {
                 taskList.name = newListName
-                completion()
             }
         } catch {
             print("editList error: \(error)")

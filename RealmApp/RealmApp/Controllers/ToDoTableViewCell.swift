@@ -12,18 +12,18 @@ class ToDoTableViewCell: UITableViewCell {
     var title = UILabel()
     var numberOfCompletedTasks = UILabel()
     
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-        if selected == true{
-            self.contentView.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
-            self.title.textColor = .white
-            self.numberOfCompletedTasks.textColor = .white
-            } else if selected == false {
-                self.contentView.backgroundColor = .clear
-                self.title.textColor = .black
-                self.numberOfCompletedTasks.textColor = .red
-            }
-    }
+//    override func setSelected(_ selected: Bool, animated: Bool) {
+//        super.setSelected(selected, animated: animated)
+//        if selected == true{
+//            self.contentView.backgroundColor = UIColor(red: 0.41, green: 0.07, blue: 0.85, alpha: 1.00)
+//            self.title.textColor = .white
+//            self.numberOfCompletedTasks.textColor = .white
+//            } else if selected == false {
+//                self.contentView.backgroundColor = .clear
+//                self.title.textColor = .black
+//                self.numberOfCompletedTasks.textColor = .red
+//            }
+//    }
 
     func setUpCell(with taskList: TasksList){
         self.title.font = UIFont.systemFont(ofSize: 20, weight: .medium)
